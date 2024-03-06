@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dummy-fullstack #name of the app, this should be the project name, spaces should be substituted with -
+description: My Example App #description for the app
+type: application
+version: 0.0.3 #for versioning of the helm chart, increase it when new release is built/deployed
+appVersion: "0.0.1"

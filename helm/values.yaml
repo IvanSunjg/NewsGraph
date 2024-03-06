@@ -1,0 +1,8 @@
+image:
+  name: ""
+  tag: ""
+build:
+  job_id: ""
+  commit: ""
+url:
+  hostname: "www.course-xai-iml23.isginf.ch"

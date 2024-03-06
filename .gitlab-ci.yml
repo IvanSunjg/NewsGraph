@@ -1,0 +1,80 @@
+stages:
+  - lint
+  - build
+  - deploy
+
+variables:
+  IMAGE_NAME: $ci_registry/$CI_PROJECT_PATH
+
+default:
+  before_script:
+    - IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+
+lint_helm:
+  stage: lint
+  image: matthiasgabathuler/my-runner:ubuntu-20.04
+  script:
+    - >-
+      helm lint ${CI_PROJECT_DIR}/helm
+      --set image.name=${IMAGE_NAME}
+      --set image.tag=${CI_COMMIT_REF_NAME}
+      --set build.job_id=${CI_JOB_ID}
+      --set build.commit=${CI_COMMIT_SHA}
+
+build_backend:
+  stage: build
+  rules:
+    - if:
+      changes:
+        paths:
+          - backend-project/**/*
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}/backend-project"
+      --dockerfile "${CI_PROJECT_DIR}/backend-project/Dockerfile"
+      --destination "${IMAGE_NAME}-backend:${CI_COMMIT_REF_NAME}"
+
+build_frontend:
+  stage: build
+  rules:
+    - if:
+      changes:
+        paths:
+          - react-frontend/**/*
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}/react-frontend"
+      --dockerfile "${CI_PROJECT_DIR}/react-frontend/Dockerfile"
+      --destination "${IMAGE_NAME}-frontend:${CI_COMMIT_REF_NAME}"
+
+deploy_app:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "ci-cd-pipeline"
+    - if: $CI_COMMIT_BRANCH =~ /^release.*$/
+    - if: $FORCE_DEPLOY
+      when: always
+    - when: never
+  image:
+    name: alpine/helm:3.11.1
+    entrypoint: [""]
+  script:
+  - >-
+    helm --namespace $k8s_namespace
+    --kube-context $k8s_context
+    upgrade ${CI_PROJECT_NAME} ${CI_PROJECT_DIR}/helm
+    --install
+    --history-max 5
+    --set image.host=${ci_registry}
+    --set image.name=${IMAGE_NAME}
+    --set image.tag=${CI_COMMIT_REF_NAME}
+    --set build.job_id=${CI_JOB_ID}
+    --set build.commit=${CI_COMMIT_SHA}
