@@ -26,7 +26,7 @@ Open the paper file
 papers = []
 with open(data_root / 'papers.jsonl', encoding='utf-8') as fp:
     for line in fp:
-        papers.append(json.loads(line.strip()))
+        papers.append(json.loads(json.loads(line.strip())))
 
 paper2claims = {}
 
@@ -62,13 +62,6 @@ for paper in papers:
     paper2claims[paper['title']] = paper_claims
 
 json.dump(paper2claims, open(data_root / 'paper2claims.json', 'w', encoding='utf-8'))
-
-papers = []
-with open(data_root / 'papers.jsonl', encoding='utf-8') as fp:
-    for i, line in enumerate(fp):
-        obj = json.loads(line)
-        obj['id'] = i
-        papers.append(obj)
 
 paper2claims = {}
 with open(data_root / 'paper2claims.json', encoding='utf-8') as fp:

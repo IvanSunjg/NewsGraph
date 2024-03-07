@@ -133,4 +133,9 @@ dmypy.json
 .DS_Store
 
 # data
-/backend-project/data
+/backend-project/data/__pycache__
+/backend-project/data/source
+/backend-project/data/key.json
+/backend-project/data/datasets.json
+/backend-project/data/papers.jsonl
+/backend-project/data/s2orc.json
