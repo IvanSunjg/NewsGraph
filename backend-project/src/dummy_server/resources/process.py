@@ -4,6 +4,7 @@ Module Description:
 
 import os
 import json
+import sys
 import openai
 from tqdm import tqdm
 import numpy as np
@@ -12,6 +13,10 @@ from dummy_server.resources.entailment import init_model, classify_nli
 from dummy_server.resources.paper_utils import merge_paragraphs, get_sentences, get_claims_from_paragraph, get_claims_from_sentence, link_claims
 
 data_root = os.path.join(".", "data")
+
+print(data_root)
+
+sys.exit()
 
 with open(data_root / 'key.json', encoding='utf-8') as f:
     keys = json.load(f)

@@ -139,3 +139,5 @@ dmypy.json
 /backend-project/data/datasets.json
 /backend-project/data/papers.jsonl
 /backend-project/data/s2orc.json
+/backend-project/data/paper-ids.json
+/backend-project/data/paper-links.jsonl
