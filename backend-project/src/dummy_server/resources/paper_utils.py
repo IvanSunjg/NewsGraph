@@ -2,12 +2,20 @@
 Module Description: 
 Util functions to generate claims and link them
 """
+import os
+from pathlib import Path
 import copy
 import json
 import openai
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-openai.api_key = "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"
+script_dir = os.path.dirname(__file__)
+target_dir = os.path.abspath(os.path.join(script_dir, '../../..', 'data'))
+data_root = Path(target_dir)
+
+with open(data_root / 'key.json', encoding='utf-8') as f:
+    keys = json.load(f)
+    openai.api_key = keys['open-ai']
 
 # pylint: disable=line-too-long
 SEGMENTATION_TEMPLATE = \

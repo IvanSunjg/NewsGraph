@@ -5,6 +5,7 @@ Module Description:
 import os
 import json
 import sys
+from pathlib import Path
 import openai
 from tqdm import tqdm
 import numpy as np
@@ -12,26 +13,24 @@ from dummy_server.resources.filtering import get_sentencepairs, init_embedding_m
 from dummy_server.resources.entailment import init_model, classify_nli
 from dummy_server.resources.paper_utils import merge_paragraphs, get_sentences, get_claims_from_paragraph, get_claims_from_sentence, link_claims
 
-data_root = os.path.join(".", "data")
-
-print(data_root)
-
-sys.exit()
+script_dir = os.path.dirname(__file__)
+target_dir = os.path.abspath(os.path.join(script_dir, '../../..', 'data'))
+data_root = Path(target_dir)
 
 with open(data_root / 'key.json', encoding='utf-8') as f:
     keys = json.load(f)
     openai.api_key = keys['open-ai']
 
-MODEL_NAME = 'text-davinci-003'
+MODEL_NAME = 'gpt-3.5-turbo-0125'
 
 """
 Open the paper file
 """
 
 papers = []
-with open(data_root / 'papers.jsonl', encoding='utf-8') as fp:
+with open(data_root / 'paper-links.jsonl', encoding='utf-8') as fp:
     for line in fp:
-        papers.append(json.loads(json.loads(line.strip())))
+        papers.append(json.loads(line.strip()))
 
 paper2claims = {}
 
