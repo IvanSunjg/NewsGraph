@@ -7,6 +7,9 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+from requests.exceptions import Timeout
+from urllib.error import HTTPError
+import sys
 
 def parse_document(soup):
     """
@@ -26,10 +29,16 @@ def get_titles_and_links(http):
     links = []
     titles = []
     for el in tqdm(els):
-        link = f"https://news.google.com{el.a['href'][1:]}"
-        referral_page = urllib.request.urlopen(link).read().decode('utf8')
+        # link = f"https://news.google.com{el.a['href'][1:]}"
+        if el.a is None:
+            continue
+        print(el.a['href'])
+        try:
+            referral_page = urllib.request.urlopen(el.a['href']).read().decode('utf8')
+        except HTTPError:
+            continue
         referral_soup = BeautifulSoup(referral_page, 'html.parser')
-        linktexts = [x.get_text() for x in referral_soup.find_all('a')]
+        linktexts = [x['href'] for x in referral_soup.find_all('a')]
         linktexts = [l for l in linktexts if l[:4] == 'http']
         links.append(linktexts[-1])
         titles.append(el.get_text())
@@ -42,6 +51,7 @@ def get_google_story(google_url, verbose=False, n=None):
     response = urllib.request.urlopen(google_url)
     http = response.read().decode('utf8')
     urls, titles = get_titles_and_links(http)
+    print(titles)
 
     texts = []
     links = []
@@ -60,7 +70,7 @@ def get_google_story(google_url, verbose=False, n=None):
             print(f"Trying: {url}")
         try:
             response = requests.get(url, timeout=5)
-        except:
+        except Timeout:
             if verbose:
                 print("Timeout")
             continue

@@ -11,7 +11,7 @@ def init_embedding_model():
     """
     Initialise the embedding model.
     """
-    embedding_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
     if device is not None:
         embedding_model = embedding_model.to(device)
     return embedding_model
@@ -35,9 +35,9 @@ def get_sentencepairs(papers):
     sentences = set([])
     sentence2ids = {}
     for i, p1 in enumerate(papers):
-        id1 = p1['id']
+        id1 = p1['paperId']
         for j, p2 in enumerate(papers):
-            id2 = p2['id']
+            id2 = p2['paperId']
             if i == j:
                 continue
 

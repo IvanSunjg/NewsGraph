@@ -135,6 +135,8 @@ dmypy.json
 # data
 /backend-project/data/__pycache__
 /backend-project/data/source
+/backend-project/data/articles
+/backend-project/data/papers
 /backend-project/data/key.json
 /backend-project/data/datasets.json
 /backend-project/data/papers.jsonl

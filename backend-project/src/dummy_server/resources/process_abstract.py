@@ -4,14 +4,23 @@ Module Description:
 
 import os
 import json
-import sys
 from pathlib import Path
-import openai
+from os import remove
+from os.path import exists
 from tqdm import tqdm
 import numpy as np
-from dummy_server.resources.filtering import get_sentencepairs, init_embedding_model, get_similarity_scores
 from dummy_server.resources.entailment import init_model, classify_nli
-from dummy_server.resources.paper_utils import merge_paragraphs, get_sentences, get_claims_from_paragraph, get_claims_from_sentence, link_claims
+from dummy_server.resources.filtering import (
+    get_sentencepairs,
+    init_embedding_model,
+    get_similarity_scores
+)
+from dummy_server.resources.paper_utils import (
+    get_sentences_abstract,
+    get_claims_from_paragraph,
+    get_claims_from_sentence,
+    link_claims
+)
 
 script_dir = os.path.dirname(__file__)
 target_dir = os.path.abspath(os.path.join(script_dir, '../../..', 'data'))
@@ -19,9 +28,10 @@ data_root = Path(target_dir)
 
 with open(data_root / 'key.json', encoding='utf-8') as f:
     keys = json.load(f)
-    openai.api_key = keys['open-ai']
 
-MODEL_NAME = 'gpt-3.5-turbo-0125'
+MODEL_NAME = "gpt-3.5-turbo-instruct"
+
+paper_dir = Path('papers/abstract')
 
 """
 Open the paper file
@@ -35,40 +45,40 @@ with open(data_root / 'paper-links.jsonl', encoding='utf-8') as fp:
 paper2claims = {}
 
 for paper in papers:
-    if paper['title'] in paper2claims:
+    if paper['title'] in paper2claims or paper['abstract'] is None:
         continue
 
-    merged_p = merge_paragraphs(paper['paragraphs'], min_words=100, max_words=1000)
     paper_claims = []
-    print([len(p) for p in merged_p])
+    response, claims = get_claims_from_sentence(paper['abstract'], MODEL_NAME)
+    reason = response.choices[0].finish_reason
+    total_text = paper['abstract'] + response.choices[0].text
 
-    for p in merged_p:
-        # print(len(p.split()))
-        response, claims = get_claims_from_sentence(p, MODEL_NAME)
-        reason = response.choices[0]['finish_reason']
-        total_text = p + response.choices[0].text
+    # pylint: disable=invalid-name
+    tries = 0
+    while reason != 'stop' or tries > 4:
+        print('trying again...')
+        response, claims = get_claims_from_sentence(total_text, MODEL_NAME)
+        reason = response.choices[0].finish_reason
+        total_text += response.choices[0].text
+        tries = tries + 1
 
-        # pylint: disable=invalid-name
-        tries = 0
-        while reason != 'stop' or tries > 4:
-            print('trying again...')
-            response, claims = get_claims_from_sentence(total_text, MODEL_NAME)
-            reason = response.choices[0]['finish_reason']
-            total_text += response.choices[0].text
-            tries = tries + 1
+    paper_claims.extend(claims)
 
-        paper_claims.extend(claims)
-
-        for c in paper_claims:
-            print(c)
-        print()
+    for c in paper_claims:
+        print(c)
+    print()
 
     paper2claims[paper['title']] = paper_claims
 
-json.dump(paper2claims, open(data_root / 'paper2claims.json', 'w', encoding='utf-8'))
+os.makedirs(os.path.dirname(data_root / paper_dir / 'paper2claims.json'), exist_ok=True)
+
+if exists(data_root / paper_dir / 'paper2claims.json'):
+    remove(data_root / paper_dir / 'paper2claims.json')
+
+json.dump(paper2claims, open(data_root / paper_dir / 'paper2claims.json', 'w', encoding='utf-8'))
 
 paper2claims = {}
-with open(data_root / 'paper2claims.json', encoding='utf-8') as fp:
+with open(data_root / paper_dir / 'paper2claims.json', encoding='utf-8') as fp:
     paper2claims = json.load(fp)
 
 for a in papers:
@@ -78,7 +88,7 @@ for a in papers:
     else:
         a['openai_claims'] = []
 
-papers = [get_sentences(paper) for paper in tqdm(papers) if paper['title'] in paper2claims]
+papers = [get_sentences_abstract(paper) for paper in tqdm(papers) if paper['title'] in paper2claims]
 papers = [get_claims_from_paragraph(paper, method='openai') for paper in tqdm(papers)]
 papers = [link_claims(paper) for paper in tqdm(papers)]
 
@@ -87,6 +97,7 @@ sentences, sentence_pairs, sentence2ids = get_sentencepairs(papers)
 model = init_embedding_model()
 similarity_scores = get_similarity_scores(sentences, model)
 most_similar = np.argsort(similarity_scores, axis=1)[:, ::-1]
+print(most_similar)
 most_similar = most_similar[:, 1:21]
 
 pairs = []
@@ -102,8 +113,10 @@ for i, row in tqdm(enumerate(most_similar)):
 
 nli_tokenizer, nli_model = init_model()
 probabilities = classify_nli(pairs, nli_tokenizer, nli_model)
-contr_thresh = [x for x in list(sorted(probabilities[:, 0], reverse=True)) if x > .7][:100][-1].item()
-entai_thresh = [x for x in list(sorted(probabilities[:, 2], reverse=True)) if x > .7][:100][-1].item()
+contr_thresh = [x for x in list(sorted(probabilities[:, 0], reverse=True)) \
+                if x > .7][:100][-1].item()
+entai_thresh = [x for x in list(sorted(probabilities[:, 2], reverse=True)) \
+                if x > .7][:100][-1].item()
 
 contradiction_idx = probabilities[:, 0] > contr_thresh
 entailment_idx = probabilities[:, 2] > entai_thresh
@@ -160,4 +173,7 @@ for a in papers:
     a['supports'] = supports
     a['contradicts'] = contras
 
-json.dump(papers, open(data_root / 'papers_with_links.json', 'w', encoding='utf-8'))
+if exists(data_root / paper_dir / 'papers_with_links.json'):
+    remove(data_root / paper_dir / 'papers_with_links.json')
+
+json.dump(papers, open(data_root / paper_dir / 'papers_with_links.json', 'w', encoding='utf-8'))

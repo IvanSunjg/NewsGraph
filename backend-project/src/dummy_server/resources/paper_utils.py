@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import copy
 import json
-import openai
+from openai import OpenAI
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 script_dir = os.path.dirname(__file__)
@@ -15,7 +15,7 @@ data_root = Path(target_dir)
 
 with open(data_root / 'key.json', encoding='utf-8') as f:
     keys = json.load(f)
-    openai.api_key = keys['open-ai']
+    client = OpenAI(api_key=keys['open-ai'])
 
 # pylint: disable=line-too-long
 SEGMENTATION_TEMPLATE = \
@@ -54,6 +54,14 @@ def word_overlap_distance(xwords, ywords):
     intersection = set.intersection(xset, yset)
     return -(len(intersection) / len(xset))
 
+def get_sentences_abstract(paper):
+    """
+    Extract the sentences from the paper's paragraphs, and store them for abstract.
+    """
+    paragraph = paper['abstract']
+    paper['sentences'] = sent_tokenize(paragraph)
+    return paper
+
 def get_sentences(paper):
     """
     Extract the sentences from the paper's paragraphs, and store them.
@@ -84,16 +92,17 @@ def get_claims_from_sentence(sentence, model_name):
     """
     Extract the claims from the a sentence.
     """
-    prompt = make_prompt(' '.join(sentence.split())),
-    completion = openai.completions.create(
+    prompt = make_prompt(' '.join(sentence.split()))
+    completion = client.completions.create(
         model=model_name,
         prompt=prompt,
         max_tokens=128,
-        temperature=0,
+        temperature=0
     )
     claims = completion.choices[0].text.strip().split('\n')
     claims = [c for c in claims if c[:6] == 'Claim:']
     claims = [c[6:].strip() for c in claims]
+
     return completion, claims
 
 # pylint: disable=cell-var-from-loop
@@ -107,14 +116,15 @@ def link_claims(paper):
         tokenized_claim = word_tokenize(claim)
         sorted_sentences = sorted(
             enumerate(tokenized_sentences),
-            key=lambda x: word_overlap_distance(tokenized_claim, x[1]))
+            key=lambda x: word_overlap_distance(tokenized_claim, x[1])
+        )
 
         best_match = list(sorted_sentences)[0]
 
         linked_claims.append({
             'claim': claim,
             'sentence_id': best_match[0],
-            'paper_id': paper['id'],
+            'paper_id': paper['paperId'],
             'sentence': paper['sentences'][best_match[0]],
         })
     paper['claims'] = linked_claims

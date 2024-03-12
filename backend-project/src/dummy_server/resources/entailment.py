@@ -39,8 +39,11 @@ def collate_nli(xs, tokenizer):
     for p,h in xs:
         result.append(
             tokenizer.encode(
-                f"{p}", f"{h}", return_tensors='pt', 
-                truncation_strategy='only_first', padding='max_length', max_length=128
+                f"{p}", f"{h}",
+                return_tensors='pt',
+                truncation='only_first',
+                padding='max_length',
+                max_length=128
             )
         )
     result = torch.cat(result, dim=0)

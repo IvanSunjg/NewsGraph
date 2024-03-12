@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 
 from flask_restful import Resource
 from sklearn.cluster import KMeans

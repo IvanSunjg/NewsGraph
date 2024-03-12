@@ -88,7 +88,6 @@ with open(data_root / article_dir / 'articles.jsonl', 'w', encoding='utf-8') as 
 
 with open(data_root / 'key.json', encoding='utf-8') as f:
     keys = json.load(f)
-    openai.api_key = keys['open-ai']
 
 MODEL_NAME = 'gpt-3.5-turbo-0125'
 
