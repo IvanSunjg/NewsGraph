@@ -6,15 +6,15 @@ import os
 import json
 import sys
 from pathlib import Path
+from os import remove
+from os.path import exists
 from collections import Counter
-import openai
 from tqdm import tqdm
 import numpy as np
 from nltk.corpus import stopwords
 from dummy_server.resources.entailment import init_model, classify_nli
-from dummy_server.resources.news_utils import get_google_story
+from dummy_server.resources.news_utils import GoogleNewsFeedScraper, link_claims, get_sentencepairs
 from dummy_server.resources.filtering import (
-    get_sentencepairs,
     init_embedding_model,
     get_similarity_scores
 )
@@ -22,19 +22,26 @@ from dummy_server.resources.paper_utils import (
     merge_paragraphs,
     get_claims_from_sentence,
     get_sentences,
-    get_claims_from_paragraph,
-    link_claims
+    get_claims_from_paragraph
 )
 
 stops = stopwords.words('english')
-url = sys.argv[1]
 
 #############################
 ### STEP 1: DOWNLOAD INFO ###
 #############################
 
-titles, texts, links, venues, urls = get_google_story(url, n=20)
+scraper = GoogleNewsFeedScraper(sys.argv[1], verbose=False, number=20)
+scraper.scrape_google_news_feed()
+scraper.get_texts()
 
+titles, texts, links, venues, urls = (
+    scraper.titles,
+    scraper.texts,
+    scraper.links,
+    scraper.venues,
+    scraper.urls
+)
 indices_of_substantial = [i for i,text in enumerate(texts) if len(text) > 10]
 
 titles_ = [titles[i] for i in indices_of_substantial]
@@ -70,6 +77,11 @@ data_root = Path(target_dir)
 
 article_dir = Path(f'articles/{MERGED_TITLE}')
 
+os.makedirs(os.path.dirname(data_root / article_dir / 'articles.jsonl'), exist_ok=True)
+
+if exists(data_root / article_dir / 'articles.jsonl'):
+    remove(data_root / article_dir / 'articles.jsonl')
+
 with open(data_root / article_dir / 'articles.jsonl', 'w', encoding='utf-8') as fp:
     for i, title in enumerate(titles_):
         obj = {
@@ -86,10 +98,7 @@ with open(data_root / article_dir / 'articles.jsonl', 'w', encoding='utf-8') as 
 ### STEP 2: SEGMENT TEXT ###
 ############################
 
-with open(data_root / 'key.json', encoding='utf-8') as f:
-    keys = json.load(f)
-
-MODEL_NAME = 'gpt-3.5-turbo-0125'
+MODEL_NAME = 'gpt-3.5-turbo-instruct'
 
 articles = []
 with open(data_root / article_dir / 'articles.jsonl', encoding='utf-8') as fp:
@@ -110,15 +119,18 @@ for article in articles:
     for p in merged_p:
         print(len(p.split()))
         response, claims = get_claims_from_sentence(p, MODEL_NAME)
-        reason = response.choices[0]['finish_reason']
+        reason = response.choices[0].finish_reason
         total_text = p + response.choices[0].text
 
         # pylint: disable=invalid-name
         tries = 0
         while reason != 'stop' or tries > 4:
             print('trying again...')
+            print("The length of the total_text is ", len(total_text))
+            if len(total_text) > 4097:
+                break
             response, claims = get_claims_from_sentence(total_text, MODEL_NAME)
-            reason = response.choices[0]['finish_reason']
+            reason = response.choices[0].finish_reason
             total_text += response.choices[0].text
             tries += 1
 
@@ -130,7 +142,10 @@ for article in articles:
 
     article2claims[article['title']] = article_claims
 
-json.dump(article2claims, open(data_root / article_dir / 'paper2claims.json',
+if exists(data_root / article_dir / 'article2claims.json'):
+    remove(data_root / article_dir / 'article2claims.json')
+
+json.dump(article2claims, open(data_root / article_dir / 'article2claims.json',
                             'w', encoding='utf-8'))
 
 articles = []
@@ -237,6 +252,9 @@ for a in articles:
 
     a['supports'] = supports
     a['contradicts'] = contras
+
+if exists(data_root / article_dir / 'articles_with_links.json'):
+    remove(data_root / article_dir / 'articles_with_links.json')
 
 json.dump(articles, open(data_root / article_dir / 'articles_with_links.json',
                         'w', encoding='utf-8'))

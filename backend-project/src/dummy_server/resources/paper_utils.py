@@ -62,19 +62,14 @@ def get_sentences_abstract(paper):
     paper['sentences'] = sent_tokenize(paragraph)
     return paper
 
-def get_sentences(paper):
-    """
-    Extract the sentences from the paper's paragraphs, and store them.
+def get_sentences(article):
+    """Extract the sentences from the article's paragraphs, and store them.
     """
     sentences = []
-    paragraphs = json.loads(paper['annotations']['paragraph'])
-
-    for p in paragraphs:
-        paragraph = paper['text'][p['start']:p['end']]
-        sentences.extend(sent_tokenize(paragraph))
-
-    paper['sentences'] = sentences
-    return paper
+    for p in article['paragraphs']:
+        sentences.extend(sent_tokenize(p))
+    article['sentences'] = sentences
+    return article
 
 def get_claims_from_paragraph(paper, method='sentences'):
     """
@@ -96,7 +91,7 @@ def get_claims_from_sentence(sentence, model_name):
     completion = client.completions.create(
         model=model_name,
         prompt=prompt,
-        max_tokens=128,
+        max_tokens=198,
         temperature=0
     )
     claims = completion.choices[0].text.strip().split('\n')
