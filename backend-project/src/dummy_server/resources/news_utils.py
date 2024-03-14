@@ -7,7 +7,7 @@ import requests
 import feedparser
 from bs4 import BeautifulSoup
 from requests.exceptions import Timeout
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import word_tokenize
 
 
 def parse_document(soup):
