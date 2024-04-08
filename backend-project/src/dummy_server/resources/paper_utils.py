@@ -19,7 +19,7 @@ with open(data_root / 'key.json', encoding='utf-8') as f:
 
 # pylint: disable=line-too-long
 SEGMENTATION_TEMPLATE = \
-"""Extract all the claims from a sentence, ignoring extraneous words such as unimportant adverbs. A sentence may contain multiple claims. Each claim should be of the form <subject> <predictate> <object>, and should have the first occurence of any pronouns replaced by their antecedents.
+"""Extract all the claims from a sentence, ignoring extraneous words such as unimportant adverbs. A sentence may contain multiple claims. Each claim should be of the form <subject> <predictate> <object>, and should have the first occurence of any pronouns replaced by their antecedents. Focus on how the author(s) identify the tensions or gaps in the existing research or empirical realities. Pay attention to anaphoric structure.
 
 Sentence: "The 3rd and 4th stations all announced that they would be postponed, and the Monaco station was subsequently cancelled."
 Claim: Monaco station was cancelled.
