@@ -14,7 +14,7 @@ def parse_document(soup):
     """
     parse document
     """
-    title = soup.title.text
+    title = soup.title.text if soup.title != None else "No title"
     paragraphs = [p.text.strip() for p in soup.find_all('p')]
     links = set([l.get('href') for l in soup.find_all('a')])
     return title, paragraphs, links
@@ -71,6 +71,8 @@ class GoogleNewsFeedScraper:
             if response.status_code == 200:
                 data = response.content
                 soup = BeautifulSoup(data, 'html.parser')
+                if soup == None:
+                    continue
                 title_, paragraphs_, links_ = parse_document(soup)
                 self.titles.append(title_)
                 self.texts.append(paragraphs_)

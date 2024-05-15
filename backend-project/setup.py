@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="dummy_server",
-    version="0.0.2",
+    version="0.0.3",
     description="Backend for the dummy project of Jiugeng Sun.",
     long_description=read("README.md"),
     classifiers=[

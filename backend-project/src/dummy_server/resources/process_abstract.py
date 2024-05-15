@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from os import remove
 from os.path import exists
+import torch
 from tqdm import tqdm
 import numpy as np
 from dummy_server.resources.entailment import init_model, classify_nli
@@ -58,6 +59,8 @@ for paper in papers:
     while reason != 'stop' or tries > 4:
         print('trying again...')
         response, claims = get_claims_from_sentence(total_text, MODEL_NAME)
+        if len(total_text) > 4097:
+            break
         reason = response.choices[0].finish_reason
         total_text += response.choices[0].text
         tries = tries + 1
@@ -132,15 +135,15 @@ s2contradict = {}
 for x in sentence2ids:
     sentence2ids[x] = list(sentence2ids[x])
 
-for (p, h), _ in entailments:
+for (p, h), probab in entailments:
     if h not in s2support:
         s2support[h] = []
-    s2support[h].append((sentence2ids[p], p))
+    s2support[h].append((sentence2ids[p], p, probab))
 
-for (p, h), _ in contradictions:
+for (p, h), probab in contradictions:
     if h not in s2contradict:
         s2contradict[h] = []
-    s2contradict[h].append((sentence2ids[p], p))
+    s2contradict[h].append((sentence2ids[p], p, probab))
 
 claim2sent = {}
 for a in papers:
@@ -156,18 +159,34 @@ for a in papers:
     for claim in a['claims']:
         if claim['claim'] in s2support:
             x = {}
-            x['my_claim'] = claim['sentence']
+            x['my_sentence'] = claim['sentence']
+            x['my_claim'] = claim['claim']
             x['links'] = []
             for link in s2support[claim['claim']]:
-                x['links'].append({'their_claim': claim2sent[link[1]], 'source':link[0]})
+                if isinstance(link[2], torch.Tensor):
+                    probabilities_dict = {'probability_1': link[2][0].item(),
+                                        'probability_2': link[2][1].item(),
+                                        'probability_3': link[2][2].item()}
+                else:
+                    # If it's already a dictionary, use it directly
+                    probabilities_dict = link[2]
+                x['links'].append({'their_claim': link[1],'their_sentence': claim2sent[link[1]], 'source':link[0], 'probability': probabilities_dict})
             supports.append(x)
 
         if claim['claim'] in s2contradict:
             x = {}
-            x['my_claim'] = claim['sentence']
+            x['my_sentence'] = claim['sentence']
+            x['my_claim'] = claim['claim']
             x['links'] = []
             for link in s2contradict[claim['claim']]:
-                x['links'].append({'their_claim': claim2sent[link[1]], 'source':link[0]})
+                if isinstance(link[2], torch.Tensor):
+                    probabilities_dict = {'probability_1': link[2][0].item(),
+                                        'probability_2': link[2][1].item(),
+                                        'probability_3': link[2][2].item()}
+                else:
+                    # If it's already a dictionary, use it directly
+                    probabilities_dict = link[2]
+                x['links'].append({'their_claim': link[1], 'their_sentence': claim2sent[link[1]], 'source':link[0], 'probability': probabilities_dict})
             contras.append(x)
 
     a['supports'] = supports

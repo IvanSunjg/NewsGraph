@@ -3,6 +3,8 @@ Module Description:
 """
 import functools
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from fairseq.data.data_utils import collate_tokens
+import torch
 from torch.utils.data import Dataset, DataLoader
 import torch
 from tqdm import tqdm

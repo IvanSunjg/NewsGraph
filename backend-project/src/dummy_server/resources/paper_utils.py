@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import copy
 import json
+import spacy
 from openai import OpenAI
 from nltk.tokenize import sent_tokenize, word_tokenize
 
@@ -19,23 +20,23 @@ with open(data_root / 'key.json', encoding='utf-8') as f:
 
 # pylint: disable=line-too-long
 SEGMENTATION_TEMPLATE = \
-"""Extract all the claims from a sentence, ignoring extraneous words such as unimportant adverbs. A sentence may contain multiple claims. Each claim should be of the form <subject> <predictate> <object>, and should have the first occurence of any pronouns replaced by their antecedents. Focus on how the author(s) identify the tensions or gaps in the existing research or empirical realities. Pay attention to anaphoric structure.
+"""Please break down the following sentences into independent facts. A sentence may contain multiple facts. Each fact should be of the form <subject> <predictate> <object>.
+Sentence: In 1963, Collins became one of the third group of astronauts selected by NASA and he served as the back-up Command Module Pilot for the Gemini 7 mission.
+Fact: Collins became an astronaut in 1963.
+Fact: Collins served as the back-up Command Module Pilot. 
+Fact: Collins served for the Gemini 7 mission.
 
-Sentence: "The 3rd and 4th stations all announced that they would be postponed, and the Monaco station was subsequently cancelled."
-Claim: Monaco station was cancelled.
-Claim: 4th stations announced they would be postponed.
-Claim: The 3rd stations announced they would be postponed.
-Claim: The 4th stations postponed.
-Claim: The 3rd stations postponed.
+Sentence: Michael Collins (born October 31, 1930) is a retired American astronaut and test pilot who was the Command Module Pilot for the Apollo 11 mission in 1969.
+Fact: Michael Collins was born on October 31, 1930.
+Fact: Michael Collins is an American astronaut.
+Fact: Michael Collins is a retired astronaut.
+Fact: Michael Collins was a test pilot for the Apollo 11 mission.
+Fact: Michael Collins was the Command Module Pilot for the Apollo 11 mission.
 
-Sentence: "Lewis Hamilton and Mercedes have once again confirmed themselves as drivers and constructors world champions."
-Claim: Mercedes confirmed themselves as constructors world champions.
-Claim: Lewis Hamilton confirmed themselves as drivers world champions.
-
-Sentence: "Local organizers in East Palestine, Ohio on Monday said their activism has successfully pressured rail company Norfolk Southern to agree to a limited relocation plan for some residents affected by last month's train derailment, but added they have no intention of backing down from their demand for justice for thousands of people in the area who are struggling in the aftermath of the accident."
-Claim: Local organizers said their activism has pressued rail company Norfolk Southern to agree to a limited relocation plan.
-Claim: Local organizers have no intention of backing down from their demand for justice.
-Claim: Rail company Norfolk Southern agree to a limited relocation plan.
+Sentence: Miassite is a gray, metallic mineral made of rhodium and sulfur and, as Science Alert explains, was identified as a regular superconductor in 2010.
+Fact: Miassite is a gray, metallic mineral.
+Fact: Miassite is made of rhodium and sulfur.
+Fact: Miassite was identified as a regular superconductor in 2020.
 
 Sentence: """
 
@@ -95,9 +96,8 @@ def get_claims_from_sentence(sentence, model_name):
         temperature=0
     )
     claims = completion.choices[0].text.strip().split('\n')
-    claims = [c for c in claims if c[:6] == 'Claim:']
-    claims = [c[6:].strip() for c in claims]
-
+    claims = [c for c in claims if c[:5] == 'Fact:']
+    claims = [c[5:].strip() for c in claims]
     return completion, claims
 
 # pylint: disable=cell-var-from-loop
@@ -142,3 +142,44 @@ def merge_paragraphs(paragraphs, min_words, max_words):
         ps = ps[:best_merge] + [joined] + ps[best_merge+2:]
 
     return ps
+
+def check_proper_noun(sentence):
+    """
+    To check if the subject of the sentence is a proper noun.
+    """
+    nlp = spacy.load("en_core_web_sm")
+    # Process the sentence using spaCy
+    doc = nlp(sentence)
+
+    # Initialize a list to store potential subjects
+    potential_subjects = []
+
+    # Find potential subjects of the sentence
+    for token in doc:
+        if "subj" in token.dep_:
+            # Add the token and its subtree to the list of potential subjects
+            potential_subjects.append(token.subtree)
+
+    # Check each potential subject for proper nouns
+    for subtree in potential_subjects:
+        contains_proper_nouns = True
+        for word in subtree:
+            if word.pos_ != 'PROPN':  # 'PROPN' for proper nouns
+                contains_proper_nouns = False
+                break
+            # if word.ent_type_ == 'PERSON':  # Exclude named entities recognized as people
+            #     contains_proper_nouns = False
+            #     break
+        if contains_proper_nouns:
+            return True  # Return True if any potential subject contains only proper nouns
+
+    return False  # Return False if none of the potential subjects contain only proper nouns
+
+def has_non_excluded_words(sentence):
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(sentence)
+    excluded_words = ["this", "that", "these", "those", "there"]  # Add pronouns and other words to be excluded
+    for token in doc:
+        if token.text.lower() in excluded_words or token.pos_ == "PRON":
+            return False
+    return True

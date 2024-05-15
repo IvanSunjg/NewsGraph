@@ -1,3 +1,3 @@
-from . import scatter_data
+from . import template_data
 
-__all__ = ["scatter_data"]
+__all__ = ["template_data"]

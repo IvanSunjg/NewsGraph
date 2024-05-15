@@ -1,0 +1,10 @@
+.svg-container {
+    position: relative;
+}
+
+.svg-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
