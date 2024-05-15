@@ -38,7 +38,6 @@ export default function Features(props: FeaturesProps) {
   const [rightGraph, setRightGraph] = React.useState<boolean>(false);
   const linkContainerRef = React.createRef<SVGSVGElement>();
 
-
   React.useEffect(() => {
     if (!templateData) {
       const fetchData = async () => {
@@ -138,7 +137,7 @@ export default function Features(props: FeaturesProps) {
 
   React.useEffect(() => {
     if (rightGraph && leftGraph) {
-      RenderLinks(linkContainerRef, svgLeftRefs, svgRightRefs, templateData, leftNo, rightNo);
+      RenderLinks(linkContainerRef, svgLeftRefs, svgRightRefs, glyphData, leftNo, rightNo);
     } else {
       const svgElement_link = linkContainerRef.current;
       if (svgElement_link) {
@@ -166,9 +165,7 @@ export default function Features(props: FeaturesProps) {
         </Grid>
       </Grid>
       <div className="svg-container">
-        <svg className='svg-link' ref={linkContainerRef} style={{ width: '100%', height: '100%' }}>
-          <circle cx="200" cy="200" r="90" fill="blue" />
-        </svg>
+        <svg className='svg-link' ref={linkContainerRef} style={{ width: '100%', height: '100%' }} />
         <Grid container spacing={2} sx={{ display: 'flex', maxWidth: '100%', height: 'auto' }}>
           <Grid
             item

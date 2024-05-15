@@ -30,7 +30,7 @@ function RenderGlyph(GlyphList, svgRef, pos, maxLengthOfList) {
         .data(GlyphList)
         .enter()
         .append("path")
-        .attr("id", (d) => `${d}`)
+        .attr("id", (d) => `${d['claim']}`)
         .attr("d", (d) => {
             const t = d['supports'] + d['contradicts'] + 1;
             positionY += 40;
