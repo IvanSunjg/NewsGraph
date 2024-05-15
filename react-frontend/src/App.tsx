@@ -26,10 +26,10 @@ export default function App() {
   React.useEffect(() => {
     if (articleNo !== -1) {
       console.log("Adding article:", articleNo);
-      if (leftArticle === -1) {
+      if (leftArticle === -1 && articleNo !== rightArticle) {
         setLeftArticle(articleNo);
         console.log("Adding article on the left:", articleNo);
-      } else if (rightArticle === -1) {
+      } else if (rightArticle === -1 && articleNo !== leftArticle) {
         setRightArticle(articleNo);
         console.log("Adding article on the right:", articleNo);
       }
