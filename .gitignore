@@ -135,7 +135,7 @@ dmypy.json
 # data
 /backend-project/data/__pycache__
 /backend-project/data/source
-/backend-project/data/articles
+/backend-project/data/articles/**
 /backend-project/data/papers
 /backend-project/data/key.json
 /backend-project/data/datasets.json
@@ -143,3 +143,5 @@ dmypy.json
 /backend-project/data/s2orc.json
 /backend-project/data/paper-ids.json
 /backend-project/data/paper-links.jsonl
+!/backend-project/data/articles/template/
+!/backend-project/data/articles/template/**
