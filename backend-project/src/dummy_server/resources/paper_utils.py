@@ -20,7 +20,7 @@ with open(data_root / 'key.json', encoding='utf-8') as f:
 
 # pylint: disable=line-too-long
 SEGMENTATION_TEMPLATE = \
-"""Please break down the following sentences into independent facts. A sentence may contain multiple facts. Each fact should be of the form <subject> <predictate> <object>.
+"""Please break down the following sentences into independent facts. A sentence may contain multiple facts. Each fact should be of the form <subject> <predicate> <object>.
 Sentence: In 1963, Collins became one of the third group of astronauts selected by NASA and he served as the back-up Command Module Pilot for the Gemini 7 mission.
 Fact: Collins became an astronaut in 1963.
 Fact: Collins served as the back-up Command Module Pilot. 
@@ -178,8 +178,11 @@ def check_proper_noun(sentence):
 def has_non_excluded_words(sentence):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(sentence)
-    excluded_words = ["this", "that", "these", "those", "there"]  # Add pronouns and other words to be excluded
+    excluded_words = ["this", "that", "these", "those", "there"]  
+
     for token in doc:
-        if token.text.lower() in excluded_words or token.pos_ == "PRON":
-            return False
+        if token.dep_ in ("nsubj", "nsubjpass"):  
+            if token.text.lower() in excluded_words or token.pos_ == "PRON" or token.tag_ == "PRP$":  
+                return False
+
     return True

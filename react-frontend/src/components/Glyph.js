@@ -1,88 +1,103 @@
 import * as d3 from "d3";
-import d3tip from "d3-tip";
 
 function RenderGlyph(GlyphList, svgRef, pos, maxLengthOfList) {
-
-    function handleArcClick(event, d) {
-        console.log(d);
-    }
 
     const color_green = d3.scaleSequential(d3.interpolateGreens);
     const color_red = d3.scaleSequential(d3.interpolateReds);
 
-    const maxHeight = GlyphList.length * 40;
-
     const svg = d3.select(svgRef.current)
         .attr("width", svgRef.current.clientWidth)
-        .attr("height", maxHeight)
-        .attr("style", "max-width: 100%; height: auto font: 10px sans-serif;");
+        
 
-    let positionY = -38;
-    let positionX;
-    if (pos === 0) {
-        positionX = 30;
-    } else {
-        positionX = svgRef.current.clientWidth - 30;
+    let textPositionY = 10;
+    let textPositionX = pos === 0 ? 10 : svgRef.current.clientWidth / 2 + 5;
+    let glyphPositionX = pos === 0 ? svgRef.current.clientWidth / 2 + 5 : 5;
+
+    for (let i = 0; i < GlyphList.length; i++) {
+
+        const text = svg.append("text")
+            .attr("class", "claim-text")
+            .attr("x", textPositionX)
+            .attr("y", textPositionY)
+            .text("Claim: " + GlyphList[i]['claim'])
+            .style("font-size", 13);
+
+        const words = text.text().split(/\s+/).reverse();
+        const lineHeight = 15;
+        let lineNumber = 0;
+        let line = [];
+        let tspan = text.text(null)
+            .append("tspan")
+            .attr("x", textPositionX)
+            .attr("y", textPositionY)
+            .attr("dy", 0);
+
+        while (words.length > 0) {
+            let word = words.pop();
+            line.push(word);
+            tspan.text(line.join(" "));
+            if (tspan.node().getComputedTextLength() > (svgRef.current.clientWidth / 2 - 15)) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan")
+                    .attr("x", textPositionX)
+                    .attr("y", textPositionY)
+                    .attr("dy", ++lineNumber * lineHeight)
+                    .text(word);
+            }
+        }
+
+        let midPositionY = textPositionY + lineNumber * lineHeight / 2;
+
+        svg.append("path")
+            .attr("id", `${GlyphList[i]['claim']}`)
+            .attr("d", () => {
+                const t = (GlyphList[i]['supports'] + GlyphList[i]['contradicts'] + 1) / (maxLengthOfList + 1);
+                if (pos === 0) {
+                    return `M${glyphPositionX},${midPositionY - t * lineNumber * lineHeight / 2} L${svgRef.current.clientWidth - 5},${midPositionY - t * lineNumber * lineHeight / 2} L${glyphPositionX},${midPositionY + t * lineNumber * lineHeight / 2} z`;
+                } else {
+                    return `M${glyphPositionX},${midPositionY - t * lineNumber * lineHeight / 2} L${svgRef.current.clientWidth / 2 - 5},${midPositionY - t * lineNumber * lineHeight / 2} L${glyphPositionX},${midPositionY + t * lineNumber * lineHeight / 2} z`;
+                }
+            })
+            .attr("stroke", "black")
+            .attr("fill", () => {
+                if (GlyphList[i]['supports'] === 0) {
+                    return "white"
+                } else if (GlyphList[i]['contradicts'] === 0) {
+                    return color_green(1)
+                } else {
+                    return color_green(GlyphList[i]['supports'] / (GlyphList[i]['supports'] + GlyphList[i]['contradicts']))
+                }
+            });
+
+        svg.append("path")
+            .attr("d", () => {
+                const t = (GlyphList[i]['supports'] + GlyphList[i]['contradicts'] + 1) / (maxLengthOfList + 1);
+                if (pos === 0) {
+                    return `M${glyphPositionX},${midPositionY + t * lineNumber * lineHeight / 2} L${svgRef.current.clientWidth - 5},${midPositionY + t * lineNumber * lineHeight / 2} L${svgRef.current.clientWidth - 5},${midPositionY - t * lineNumber * lineHeight / 2} z`;
+                } else {
+                    return `M${glyphPositionX},${midPositionY + t * lineNumber * lineHeight / 2} L${svgRef.current.clientWidth / 2 - 5},${midPositionY + t * lineNumber * lineHeight / 2} L${svgRef.current.clientWidth / 2 - 5},${midPositionY - t * lineNumber * lineHeight / 2} z`;
+                }
+            })
+            .attr("stroke", "black")
+            .attr("fill", () => {
+                if (GlyphList[i]['contradicts'] === 0) {
+                    return "white"
+                } else if (GlyphList[i]['supports'] === 0) {
+                    return color_red(1)
+                } else {
+                    return color_red(GlyphList[i]['contradicts'] / (GlyphList[i]['supports'] + GlyphList[i]['contradicts']))
+                }
+            });
+
+
+
+        textPositionY = textPositionY + 30 + lineNumber * lineHeight;
     }
 
-
-    const upperTriangles = svg.selectAll(".upper-triangle")
-        .data(GlyphList)
-        .enter()
-        .append("path")
-        .attr("id", (d) => `${d['claim']}`)
-        .attr("d", (d) => {
-            const t = d['supports'] + d['contradicts'] + 1;
-            positionY += 40;
-            if(pos === 0){
-                return `M${positionX},${positionY} L${positionX + t / (maxLengthOfList + 1) * (svgRef.current.clientWidth - 60)},${positionY} L${positionX},${positionY + 20} z`;
-            }else{
-                return `M${positionX - t / (maxLengthOfList + 1) * (svgRef.current.clientWidth - 60)},${positionY} L${positionX},${positionY} L${positionX - t / (maxLengthOfList + 1) * (svgRef.current.clientWidth - 60)},${positionY + 20} z`;
-            }
-        })
-        .attr("stroke", "black")
-        .attr("fill", d => {
-            if (d['supports'] === 0) {
-                return "white"
-            } else if (d['contradicts'] === 0) {
-                return color_green(1)
-            } else {
-                return color_green(d['supports'] / (d['supports'] + d['contradicts']))
-            }
-        });
-
-    positionY = -38;
-    if (pos === 0) {
-        positionX = 30;
-    } else {
-        positionX = svgRef.current.clientWidth - 30;
-    }
-
-    const lowerTriangles = svg.selectAll(".lower-triangle")
-        .data(GlyphList)
-        .enter()
-        .append("path")
-        .attr("d", (d) => {
-            positionY += 40;
-            const t = d['supports'] + d['contradicts'] + 1;
-            if (pos === 0) {
-                return `M${positionX + t / (maxLengthOfList + 1) * (svgRef.current.clientWidth - 60)},${positionY + 20} L${positionX + t / (maxLengthOfList + 1) * (svgRef.current.clientWidth - 60)},${positionY} L${positionX},${positionY + 20} z`;
-            } else {
-                return `M${positionX},${positionY + 20} L${positionX},${positionY} L${positionX - t / (maxLengthOfList + 1) * (svgRef.current.clientWidth - 60)},${positionY + 20} z`;
-            }
-        })
-        .attr("stroke", "black")
-        .attr("fill", d => {
-            if (d['contradicts'] === 0) {
-                return "white"
-            } else if (d['supports'] === 0) {
-                return color_red(1)
-            } else {
-                return color_red(d['contradicts'] / (d['supports'] + d['contradicts']))
-            }
-        });
-    //     .on('mouseover', tooltip.show)
-    //     .on('mouseout', tooltip.hide);
+    svg.attr("style", "height: -webkit-fill-available;").
+        attr("style", `min-height: ${textPositionY + 5}`);
 
     return svg.node();
 }
@@ -90,15 +105,4 @@ function RenderGlyph(GlyphList, svgRef, pos, maxLengthOfList) {
 export default RenderGlyph;
 
 
-// const tooltip = d3tip()
-//     .style('border', 'solid 3px black')
-//     .style('background-color', 'white')
-//     .style('border-radius', '10px')
-//     .style('float', 'left')
-//     .style('font-family', 'monospace')
-//     .html((event, d) => `
-//   <div style='float: right'>
-//     Claim:  <br/>
-//   </div>`);
 
-// svg.call(tooltip);

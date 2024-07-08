@@ -52,7 +52,7 @@ export default function FAQ() {
             id="panel1d-header"
           >
             <Typography component="h3" variant="subtitle2">
-              How do I contact customer support if I have a question or issue?
+              What does the Hierarchical Edge Bundling Graph stand for?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -61,10 +61,13 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              You can reach our customer support team by emailing
-              <Link> support@email.com </Link>
-              or calling our toll-free number. We&apos;re here to assist you
-              promptly.
+              Pagination Navigation Bar contains all the possible indices of
+              the articles with previous, next, first and last buttons enabled.
+              Two hierarchical edge bundling graphs for entailment graph on the 
+              left and contradiction graph on the right. The graphs serve to visually 
+              represent the volume and distribution of claims across the news 
+              collection while also depicting the relationships at the sentence 
+              level among the articles.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -78,7 +81,7 @@ export default function FAQ() {
             id="panel2d-header"
           >
             <Typography component="h3" variant="subtitle2">
-              Can I return the product if it doesn&apos;t meet my expectations?
+              What does the Features section stand for?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -87,9 +90,19 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              Absolutely! We offer a hassle-free return policy. If you&apos;re not
-              completely satisfied, you can return the product within [number of
-              days] days for a full refund or exchange.
+              When a user selects two news articles—the focus article on the left and the 
+              reference article on the right—the dashboard displays the original articles 
+              along with all their corresponding extracted claims. Each claim is accompanied 
+              by a visual indicator consisting of two triangles forming a rectangle with a diagonal 
+              line from the bottom left to the top right. The rectangles have a uniform width, while 
+              their heights vary based on the number of claims that support or contradict the claim from 
+              other articles. At the top of the section, there are two delete buttons to delete the 
+              corresponding news articles. A greater height indicates a higher number of supporting or 
+              contradicting claims, suggesting the claim's potential controversy or influence. The triangles 
+              within the rectangles are colored red or green, corresponding to the numbers of entailments and 
+              contradictions, respectively. The darker the color, the greater the number of relationships it 
+              possesses compared to the other claims within the article. A white color indicates the absence of 
+              such relationships.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -103,7 +116,7 @@ export default function FAQ() {
             id="panel3d-header"
           >
             <Typography component="h3" variant="subtitle2">
-              What makes your product stand out from others in the market?
+              How can I approach to the developers?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -112,35 +125,7 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              Our product distinguishes itself through its adaptability, durability,
-              and innovative features. We prioritize user satisfaction and
-              continually strive to exceed expectations in every aspect.
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion
-          expanded={expanded === 'panel4'}
-          onChange={handleChange('panel4')}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel4d-content"
-            id="panel4d-header"
-          >
-            <Typography component="h3" variant="subtitle2">
-              Is there a warranty on the product, and what does it cover?
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography
-              variant="body2"
-              gutterBottom
-              sx={{ maxWidth: { sm: '100%', md: '70%' } }}
-            >
-              Yes, our product comes with a [length of warranty] warranty. It covers
-              defects in materials and workmanship. If you encounter any issues
-              covered by the warranty, please contact our customer support for
-              assistance.
+              You can reach us by emailing <Link> jiugengsun@gmail.com </Link>.
             </Typography>
           </AccordionDetails>
         </Accordion>

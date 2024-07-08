@@ -3,16 +3,16 @@ import * as d3 from "d3";
 function bilink(root, type) {
     const map = new Map(root.leaves().map(d => [id(d), d]));
     for (const d of root.leaves()) {
-        d.incoming = []
+        d.outgoing = []
         if (type === 'support') {
-            d.outgoing = d.data.supports.map(i => [d, map.get(i)]);
+            d.incoming = d.data.supports.map(i => [d, map.get(i)]);
         } else {
-            d.outgoing = d.data.contradicts.map(i => [d, map.get(i)]);
+            d.incoming = d.data.contradicts.map(i => [d, map.get(i)]);
         }
 
     }
     for (const d of root.leaves()) {
-        for (const o of d.outgoing) o[1].incoming.push(o);
+        for (const o of d.incoming) o[1].outgoing.push(o);
     }
     return root;
 }

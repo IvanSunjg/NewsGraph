@@ -1,8 +1,14 @@
-# from transformers import pipeline
 # import numpy as np
 # import json
+# Use a pipeline as a high-level helper
+from transformers import pipeline
 
-# # classifier = pipeline("text-classification", model = "roberta-large-mnli", top_k = None)
+# pipe = pipeline("text-classification", model="microsoft/deberta-large-mnli", top_k = None)
+# # # classifier = pipeline("text-classification", model = "roberta-large-mnli", top_k = None)
+
+# probabilities = pipe(['[CLS] Up to $8.1 billion will become available to build the border wall. [SEP] A wall was built along the southern U.S.-Mexico border. [SEP]'])
+
+# print(probabilities)
 
 # # probabilities = classifier(['Hartwig has a co-appointment at the PSFC. Parzyck works at the University of North Texas.',
 # #                   'Navrotsky is at Arizona State University. Argonne National Laboratory is located in the United States.',
@@ -39,19 +45,19 @@
 
 # # print(result_array)
 
-# # classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-# # candidate_labels = ['objective fact', 'subjective opinion']
-# # sequence_to_classify = ["one day I will see the world", 
-# #                         "HTSI is an innovation leader in the field of high-temperature superconducting tape.",
-# #                         "AI could kill us in about 200 years",
-# #                         ""]
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+candidate_labels = ['immigration', 'other topic']
+sequence_to_classify = ["one day I will see the world.", 
+                        "HTSI is an innovation leader in the field of high-temperature superconducting tape.",
+                        "AI could kill us in about 200 years or just poses a great potential threat to our future.",
+                        "301,000 migrants were paroled at official ports of entry in fiscal 20."]
 
-# # labels = classifier(sequence_to_classify, candidate_labels, multi_label=False)
+labels = classifier(sequence_to_classify, candidate_labels, multi_label=False)
 
-# # results = [1 if item['labels'][0] == 'objective fact' and item['scores'][0] > .6 else 0 for item in labels]
-# # print(labels)
-# # print()
-# # print(results)
+results = [1 if item['labels'][0] == 'immigration' and item['scores'][0] > .5 else 0 for item in labels]
+print(labels)
+print()
+print(results)
 
 # claim_per_article = [1,2,3,4,5,6,7,8,9,8,5]
 
@@ -108,9 +114,3 @@
 
 # print(sentences)
 
-from pyspark.sql import SparkSession
-
-spark = SparkSession.builder \
-        .appName("Link") \
-        .getOrCreate()
-df = spark.read.jdbc("translationdb/00000a7a.jdb", table="table_name")

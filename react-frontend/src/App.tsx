@@ -39,7 +39,7 @@ export default function App() {
   return (
     <ThemeProvider theme={LPtheme}>
       <CssBaseline />
-      {/* <AppAppBar mode={mode} toggleColorMode={toggleColorMode} /> */}
+      <AppAppBar mode={mode} toggleColorMode={toggleColorMode} />
       <Hero addArticle={setArticleNo} />
       <Divider />
       <Box sx={{ bgcolor: 'background.default' }}>

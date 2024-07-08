@@ -6,16 +6,17 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Template from './Template';
 import Pagination from '@mui/material/Pagination';
+import PaginationItem from '@mui/material/PaginationItem';
 
-interface HeroPorps{
+interface HeroPorps {
   addArticle: (articleNo: number) => void;
 }
 
-export default function Hero ({ addArticle }: HeroPorps) {
+export default function Hero({ addArticle }: HeroPorps) {
 
-  const [article, setArticle] = React.useState(1);
+  const [article, setArticle] = React.useState(0);
   const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setArticle(value);
+    setArticle(value - 1);
   };
 
   return (
@@ -67,12 +68,28 @@ export default function Hero ({ addArticle }: HeroPorps) {
             </Typography>
           </Stack>
           <Box sx={{ width: 500 }}>
-            <Pagination shape="rounded" page={article} onChange={handleChange} count={21} defaultPage={1} siblingCount={1} boundaryCount={2} showFirstButton showLastButton />
+            <Pagination
+              shape="rounded"
+              page={article + 1}
+              onChange={handleChange}
+              renderItem= {(item) => (
+                <PaginationItem
+                  {...item}
+                  page={item.page !== null ? item.page - 1 : item.page}
+                  selected={item.page !== null && item.page - 1 === article}
+                />
+              )}
+              count={18}
+              siblingCount={1}
+              boundaryCount={2}
+              showFirstButton
+              showLastButton
+            />
           </Box>
         </Container>
 
       </Box>
-      <Template article={article} addArticle={addArticle}/>
+      <Template article={article} addArticle={addArticle} />
     </Box>
 
   );

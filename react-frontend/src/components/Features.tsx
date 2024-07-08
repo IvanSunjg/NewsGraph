@@ -14,7 +14,6 @@ import Divider from '@mui/material/Divider';
 import RenderGlyph from './Glyph';
 import RenderLinks from './Links';
 
-
 interface FeaturesProps {
   leftNo: number;
   rightNo: number;
@@ -171,12 +170,12 @@ export default function Features(props: FeaturesProps) {
             item
             xs={12}
             md={6}
-            sx={{ display: { xs: 'none', sm: 'flex' }, width: '100%' }}
+            sx={{ display: { xs: 'none', sm: 'flex' }, width: '100%', height: 'auto' }}
           >
             <Card
               variant="outlined"
               sx={{
-                height: '100%',
+                height: 'auto',
                 width: '100%',
                 display: { xs: 'none', sm: 'flex' },
                 pointerEvents: 'none',
@@ -187,7 +186,7 @@ export default function Features(props: FeaturesProps) {
                   marginLeft: '5%',
                   width: '90%',
                   minHeight: 500,
-                  height: '100%',
+                  height: 'auto',
                   backgroundSize: 'contain',
                 }}
               >
@@ -202,17 +201,17 @@ export default function Features(props: FeaturesProps) {
                           <div>
                             <ListItem alignItems="flex-start" sx={{ width: '100%', minHeight: 'auto' }}>
                               <Grid container sx={{ height: "auto" }}>
-                                <Grid item xs={8} >
+                                <Grid item xs={6} >
+                                <Divider component="li" />
                                   <Typography
-                                    variant="body2"
+                                    variant="body1"
                                     gutterBottom
                                     sx={{ maxWidth: '100%' }}
                                   >
                                     {filteredLeftStrings[index]}
                                   </Typography>
-                                  <Divider component="li" />
                                 </Grid>
-                                <Grid item xs={4} sx={{ width: '100%', height: "auto" }}>
+                                <Grid item xs={6} sx={{ width: '100%', height: "auto" }}>
                                   <svg ref={ref} style={{ width: '100%', minHeight: "auto" }} />
                                 </Grid>
                               </Grid>
@@ -261,18 +260,19 @@ export default function Features(props: FeaturesProps) {
                         <div>
                           <ListItem alignItems="flex-start" sx={{ width: '100%' }}>
                             <Grid container sx={{ height: "100%" }}>
-                              <Grid item xs={4}>
+                              <Grid item xs={6}>
                                 <svg key={index} ref={ref} style={{ width: '100%' }} />
                               </Grid>
-                              <Grid item xs={8} >
+                              <Grid item xs={6} >
+                                <Divider component="li" />
                                 <Typography
-                                  variant="body2"
+                                  variant="body1"
                                   gutterBottom
                                   sx={{ maxWidth: '100%' }}
                                 >
                                   {filteredRightStrings[index]}
                                 </Typography>
-                                <Divider component="li" />
+
                               </Grid>
                             </Grid>
                           </ListItem>
