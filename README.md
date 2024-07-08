@@ -1,9 +1,12 @@
-# Project Title
+# NewsGraph
 
-[[_TOC_]]
+### A Novel Visualization Approach on Robust Facts Inference
+
+LLM's backend part of the work is based on [News Sense](https://github.com/jmilbauer/NewsSense). 
 
 ## Project Description 
-Describe here your project in detail and define your goals.
+
+
 
 
 
