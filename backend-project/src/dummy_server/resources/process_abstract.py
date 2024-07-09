@@ -196,3 +196,81 @@ if exists(data_root / paper_dir / 'papers_with_links.json'):
     remove(data_root / paper_dir / 'papers_with_links.json')
 
 json.dump(papers, open(data_root / paper_dir / 'papers_with_links.json', 'w', encoding='utf-8'))
+
+with open(data_root / paper_dir /  'papers_with_links.json', encoding='utf-8') as fp:
+    article_claims = json.load(fp)
+
+new_data = {"name":"immigration","children":[]}
+
+i = 0
+for idx, claims in enumerate(article_claims):
+    if 'claims' not in claims.keys():
+        continue
+    new_data["children"].append({"name": str(idx), 'children':[]})
+    news_claims = claims['claims']
+    for claim in news_claims:
+        new_data["children"][idx]['children'].append({'name': str(i), 'claim': claim['claim'], 'supports': [], 'contradicts': []})
+        i += 1
+
+for idx, claims in enumerate(article_claims):
+    if 'supports' not in claims.keys():
+        continue
+    for support in claims['supports']:
+        for children in new_data['children'][idx]['children']:
+            if children['claim'] == support['my_claim']:
+                for links in support['links']:
+                    for child in new_data['children'][links['source'][0]]['children']:
+                        if child['claim'] == links['their_claim']:
+                            children['supports'].append("immigration."+str(links['source'][0])+"."+child['name'])
+    for contras in claims['contradicts']:
+        for children in new_data['children'][idx]['children']:
+            if children['claim'] == contras['my_claim']:
+                for links in contras['links']:
+                    for child in new_data['children'][links['source'][0]]['children']:
+                        if child['claim'] == links['their_claim']:
+                            children['contradicts'].append("immigration."+str(links['source'][0])+"."+child['name'])
+
+json.dump(new_data, open(data_root / paper_dir / 'link_graphs.json', 'w', encoding='utf-8'))
+
+claims_positions = []
+for paper in article_claims:
+    if 'paragraphs' in paper.keys():
+        paragraphs = list(filter(lambda s: s != "", paper['paragraphs']))
+        claim_positions = [[] for _ in range(len(paragraphs))]
+        for claim in paper['claims']:
+            no_support = 0
+            no_contras = 0
+            for support in paper['supports']:
+                if support['my_claim'] == claim['claim']:
+                    no_support = len(support['links'])
+            for contras in paper['contradicts']:
+                if contras['my_claim'] == claim['claim']:
+                    no_contras = len(contras['links'])
+            for i, paragraph in enumerate(paragraphs):
+                if claim['sentence'] in paragraph:
+                    claim_positions[i].append({'claim':claim['claim'], 'sentence':claim['sentence'], 'supports':no_support, 'contradicts':no_contras})
+        claims_positions.append(claim_positions)
+
+for i, claim_positions in enumerate(claims_positions):
+    for claims in claim_positions:
+        for claim in claims:
+            supports_positions = []
+            for support in article_claims[i]['supports']:
+                if support['my_claim'] == claim['claim']:
+                    for link in support['links']:
+                        for j, c_positions in enumerate(claims_positions[link['source'][0]]):
+                            for k, c_position in enumerate(c_positions):
+                                if(c_position['claim'] == link['their_claim']):
+                                    supports_positions.append({"paper_no":link['source'][0],"paragraph":j,"their_claim":link['their_claim']})
+            claim["supports_positions"] = supports_positions
+            contradicts_positions = []
+            for support in article_claims[i]['contradicts']:
+                if support['my_claim'] == claim['claim']:
+                    for link in support['links']:
+                        for j, c_positions in enumerate(claims_positions[link['source'][0]]):
+                            for k, c_position in enumerate(c_positions):
+                                if(c_position['claim'] == link['their_claim']):
+                                    contradicts_positions.append({"paper_no":link['source'][0],"paragraph":j,"their_claim":link['their_claim']})
+            claim["contradicts_positions"] = contradicts_positions
+
+json.dump(claims_positions, open(data_root / paper_dir / 'claims_positions.json', 'w', encoding='utf-8'))
