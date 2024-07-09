@@ -14,7 +14,7 @@ The exponential proliferation and politicization of news articles pose significa
 
 The dashboard comprises several interactive components designed to facilitate user exploration. These include the App Bar, Links Graph, News Comparison, and Frequently Asked Questions (FAQ) sections.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Ue2LL9ghSh8" frameborder="0" allowfullscreen></iframe>
+**YouTube Demo Video Link**: https://www.youtube.com/embed/Ue2LL9ghSh8 
 
 ## Requirements
 
@@ -62,6 +62,12 @@ You should finally get a folder in `/backend-project/data/papers/`. Change its n
 ### LLM Pipeline
 
 The figure depicts the detailed pipeline, which consists of seven steps: Collection, Summarization, Extraction, Verification, Linking, Filtering, and Inference.
+
+![LLM_Pipeline](LLM_Pipeline.png)
+
+To mitigate the drawbacks mentioned above, we propose an additional verification step before approving the claims extracted from textual data as valid facts for subsequent analysis. We employ the simple linguistic verification and zero-shot text classification, bart-large-mnli, in this procedure, as shown in Figure.
+
+![Verification_Pipeline](Verification_Pipeline.png)
 
 ### FrontEnd
 
