@@ -1,5 +1,7 @@
 # NewsGraph
 
+<img src="/react-frontend/src/components/logo.svg" alt="Alt text" width="500" height="300">
+
 ### A Novel Visualization Approach on Robust Facts Inference
 
 LLM's backend part of the work is based on [News Sense](https://github.com/jmilbauer/NewsSense). 
@@ -22,40 +24,44 @@ The dashboard comprises several interactive components designed to facilitate us
 
 #### Google News
 
-Folder `/backend-project/data/articles/template` contains an example of data which allows you to try the dashboard directly. It contains the searching results from `Trump administration Immigration` from [Google News](https://news.google.com/search?q=Trump%20administration%20Immigration&hl=en-US&gl=US&ceid=US%3Aen). 
+Folder `/backend-project/data/articles/template` contains an example of data which allows you to try the dashboard directly. It contains the search results from `Trump administration Immigration` from [Google News](https://news.google.com/search?q=Trump%20administration%20Immigration&hl=en-US&gl=US&ceid=US%3Aen). 
 
-You can also create your own data. You need to create an API Key from [openAI](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key). After you get your API Key and have available quota, create a fine named `/backend-project/data/key.json` and make the json file look like this:
+You can also create your data. You need to create an API Key from [openAI](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key). After you get your API Key and have available quota, create a fine named `/backend-project/data/key.json` and make the json file look like this:
 
 ```json
 {
     "open-ai" : "your openAI API key",
-    "scholar-api" : "your semantc scholar API key"
+    "scholar-api" : "your semantic scholar API key"
 }
 ```
 
 Substitute `"your openAI API key"` with your real key. `"scholar-api"` is used for ***Research Articles*** analysis. If you only want to play with news articles, you can ignore this key.
 
-Go to `backend-project` and create propoer python environment. `cd to the /backend-project/src/dummy_server/resources` and type:
+Go to `backend-project` and create a proper Python environment. `cd to the /backend-project/src/dummy_server/resources` and type:
 
 ```python
 python process_news.py your_topic_of_interst
 ```
 
-You should finally get a folder in `/backend-project/data/articles/`. Change its name to `template` and now you should be able to see your results if you start the frontEnd.
+You should finally get a folder in `/backend-project/data/articles/`. Change its name to `template` and now you should be able to see your results if you start the front end.
 
 #### Research Articles
 
-In principal, the data can be any scraped data from Google News. We also provide an alternative pipeline to analyze the ***Research Articles*** with the help of [Semenatic Scholar](https://www.semanticscholar.org/product/api). Current pipeline only tries to analyze the abstracts. Go to the `/backend-project/data/paper-list.json` and type in the list of paper you are interested in. Also don't forget to add the API key from [Semenatic Scholar](https://www.semanticscholar.org/product/api) and put it in `/backend-project/data/key.json`.
+In principle, the data can be any scraped data from Google News. We also provide an alternative pipeline to analyze the ***Research Articles*** with the help of [Semenatic Scholar](https://www.semanticscholar.org/product/api). The current pipeline only tries to analyze the abstracts. Go to the `/backend-project/data/paper-list.json` and type in the list of papers you are interested in. Also don't forget to add the API key from [Semenatic Scholar](https://www.semanticscholar.org/product/api) and put it in `/backend-project/data/key.json`.
 
-Go to `backend-project` and create propoer python environment. `cd to the /backend-project/src/dummy_server/resources` and type:
+Go to `backend-project` and create a proper Python environment. `cd to the /backend-project/src/dummy_server/resources` and type:
 
 ```python
 python process_abstract.py
 ```
 
-You should finally get a folder in `/backend-project/data/papers/`. Change its name to `template` and move it to `/backend-project/data/articles/`. Now you should be able to see your results if you start the frontEnd.
+You should finally get a folder in `/backend-project/data/papers/`. Change its name to `template` and move it to `/backend-project/data/articles/`. Now you should be able to see your results if you start the front end.
 
-**NB**: This pipeline, given the fact that Semantic Scholar API is still in the progress of improvement and papers are usually more complex, is not guaranteed to give robust results. If you are interested to make it better, please contact me :).
+**NB**: This pipeline, given the fact that Semantic Scholar API is still in the process of improvement and papers are usually more complex, is not guaranteed to give robust results. If you are interested in making it better, please contact me :).
+
+### LLM Pipeline
+
+The figure depicts the detailed pipeline, which consists of seven steps: Collection, Summarization, Extraction, Verification, Linking, Filtering, and Inference.
 
 ### FrontEnd
 
